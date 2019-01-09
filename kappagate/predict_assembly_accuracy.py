@@ -6,24 +6,32 @@ import tatapov
 from topkappy import (KappaAgent, KappaSiteState, KappaRule, KappaModel,
                       snapshot_agent_nodes_to_graph)
 
-def linear_graph_to_nodes_list(graph, node_name=None):
-    start, end = [n for n in graph.nodes if graph.degree[n] == 1]
-    linear_path_nodes = list(networkx.all_simple_paths(graph, start, end))[0]
-    if node_name is None:
-        return tuple(linear_path_nodes)
-    return tuple([graph.nodes[n][node_name] for n in linear_path_nodes])
+from .tools import overhangs_list_to_slots, linear_graph_to_nodes_list
 
-def predict_assembly_accuracy(slots=None, overhangs=None, duration=1000,
-                              initial_quantities=1000, corrective_factor=1.0,
-                              annealing_data=('25C', '01h')):
-    if overhangs is not None:
-        overhangs = list(overhangs)
-        slots_overhangs = zip(['LEFT'] + overhangs, overhangs + ['RIGHT'])
-        slots = [
-            ("p%03d" % i, left, right)
-            for i, (left, right) in enumerate(slots_overhangs)
-        ]
-        
+def slots_to_agents_and_rules(slots, annealing_data=('25C', '01h'),
+                              corrective_factor=1.0):
+    """Generate Topkappy rules and agents objects modeling parts interactions.
+    
+    Parameters
+    ----------
+
+    slots
+      A list [(slot_name, left_overhang, right_overhang), ...]
+    
+    annealing_data
+      Either a pandas dataframe or a couple (temperature, duration) indicating
+      an experimental dataset from Potapov et al. 2018
+    
+    corrective_factor
+      A factor that can be applied to decrease (when <1) or increase (>1)
+      the differences in affinity in the dataset.
+    
+    Returns
+    -------
+
+    agents, rules
+      Lists of Topkappy agents and rules, ready to be fed to a KappaModel
+    """
     if isinstance(annealing_data, tuple):
         ad_temp, ad_duration = annealing_data
         annealing_data = tatapov.annealing_data[ad_temp][ad_duration]
@@ -31,8 +39,6 @@ def predict_assembly_accuracy(slots=None, overhangs=None, duration=1000,
         KappaAgent(pos, (left, right))
         for pos, left, right in slots
     ]
-    if isinstance(initial_quantities, int):
-        initial_quantities = {a: initial_quantities for a in agents}
     all_overhangs = set([o for (pos, l, r) in slots for o in (l, r)
                     if set(o) <= set('ATGC')])
     rules = []
@@ -66,6 +72,48 @@ def predict_assembly_accuracy(slots=None, overhangs=None, duration=1000,
                 ],
                 rate=rate ** corrective_factor
             ))
+    return agents, rules
+
+def predict_assembly_accuracy(slots, duration=1000, initial_quantities=1000,
+                              corrective_factor=1.0,
+                              annealing_data=('25C', '01h')):
+    """Generate Topkappy rules and agents objects modeling parts interactions.
+    
+    Parameters
+    ----------
+
+    slots
+      A list [(slot_name, left_overhang, right_overhang), ...]
+    
+    annealing_data
+      Either a pandas dataframe or a couple (temperature, duration) indicating
+      an experimental dataset from Potapov et al. 2018
+    
+    duration
+      Virtual duration of the Kappa complexation simulation experiments.
+      A large number ensures that the experiment comes to equilibrium, and
+      is not necessarily longer. So keep it large
+    
+    initial_quantities
+      Either a dict {slot_name: initial_quantity} or an integer in case all
+      agents start the simulation with the same initial quantity. The higher
+      the initial quantities, the less noisy the results of the simulation.
+    
+    corrective_factor
+      A factor that can be applied to decrease (when <1) or increase (>1)
+      the differences in affinity in the dataset.
+    
+    Returns
+    -------
+
+    agents, rules
+      Lists of Topkappy agents and rules, ready to be fed to a KappaModel
+    """
+    agents, rules = slots_to_agents_and_rules(
+        slots, annealing_data=annealing_data,
+        corrective_factor=corrective_factor)
+    if isinstance(initial_quantities, int):
+        initial_quantities = {a: initial_quantities for a in agents}
     model = KappaModel(
         agents = agents,
         rules = rules,

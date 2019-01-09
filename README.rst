@@ -34,46 +34,116 @@ constructs (which may produce bad clones after transformation and plating).
 
 This is an experimental piece of software, useful to us, but coming with no warranty.
 
-Example
+Examples
 --------
 
 
 .. code:: python
 
-    from kappagate import predict_assembly_accuracy
+    from kappagate import predict_assembly_accuracy, overhangs_to_slots
 
     # FIRST TEST ON 12 WELL-DESIGNED OVERHANGS
 
-    overhangs=  ['GGAG', 'GGCA', 'TCGC', 'CAGT', 'TCCA', 'GAAT',
-                 'AGTA', 'TCTT', 'CAAA', 'GCAC', 'AACG', 'GTCT', 'CCAT']
-    predicted_rate, _, _ = predict_assembly_accuracy(overhangs=overhangs)
+    overhangs=  ['GGAG', 'GGCA', 'TCGC', 'CAGT', 'TCCA',
+                 'GAAT', 'AGTA', 'TCTT', 'CAAA', 'GCAC',
+                 'AACG', 'GTCT', 'CCAT']
+    slots = overhangs_to_slots(overhangs)
+    predicted_rate, _, _ = predict_assembly_accuracy(slots)
     
     print (predicted_rate)
     # >>> 0.987
 
 This means that 98.7% of clones will carry a valid assembly. It is really
-not far from the experimental observation in,, Potapov et al. which was 99.2% +- 0.6.
+not far from the experimental observation in,, Potapov et al. which was
+99.2% +- 0.6% (1 std).
 Let's have a look at a few more sets:
 
 .. code:: python
 
-    overhangs = ['GGAG', 'GATA', 'GGCA', 'GGTC', 'TCGC', 'GAGG',
-                 'CAGT', 'GTAA', 'TCCA', 'CACA', 'GAAT', 'ATAG',
-                 'AGTA', 'ATCA', 'TCTT', 'AGGT', 'CAAA', 'AAGC',
-                 'GCAC', 'CAAC', 'AACG', 'CGAA', 'GTCT', 'TCAG', 'CCAT']
-    predicted_rate, _, _ = predict_assembly_accuracy(overhangs=overhangs)
+    overhangs = ['GGAG', 'GATA', 'GGCA', 'GGTC', 'TCGC',
+                 'GAGG', 'CAGT', 'GTAA', 'TCCA', 'CACA',
+                 'GAAT', 'ATAG', 'AGTA', 'ATCA', 'TCTT',
+                 'AGGT', 'CAAA', 'AAGC', 'GCAC', 'CAAC',
+                 'AACG', 'CGAA', 'GTCT', 'TCAG', 'CCAT']
+    slots = overhangs_to_slots(overhangs)
+    predicted_rate, _, _ = predict_assembly_accuracy(slots)
     print (predicted_rate)
-    # >>> 0.84
+    # >>> 0.846
     # In Potapov 2018: 84% +/- 5%
 
 .. code:: python
 
-    overhangs=  ['GGAG', 'GGTC', 'AGCA', 'CAGT', 'GGTA', 'GAAT', 'GGTT',
-                'TCTT', 'GGTG', 'GCAC', 'AGCG', 'GTCT', 'CCAT']
-    predicted_rate, _, _ = predict_assembly_accuracy(overhangs=overhangs)
+    overhangs=  ['GGAG', 'GGTC', 'AGCA', 'CAGT', 'GGTA',
+                 'GAAT', 'GGTT', 'TCTT', 'GGTG', 'GCAC',
+                 'AGCG', 'GTCT', 'CCAT']
+    slots = overhangs_to_slots(overhangs)
+    predicted_rate, _, _ = predict_assembly_accuracy(slots)
     print (predicted_rate)
     # >>> 0.33
     # In Potapov 2018: 45% +/- 5%
+
+Moar examples !!
+----------------
+
+Plotting interactions
+~~~~~~~~~~~~~~~~~~~~~
+
+To plot the parts circularly with their interaction:
+
+.. code:: python
+
+    from kappagate import overhangs_list_to_slots, plot_circular_interactions
+    overhangs = ['TAGG', 'GACT', 'GGAC', 'CAGC',
+                 'GGTC', 'GCGT', 'TGCT', 'GGTA',
+                 'CGTC', 'CTAC', 'GCAA', 'CCCT']
+    slots = overhangs_list_to_slots(overhangs)
+    ax = plot_circular_interactions(
+        slots, annealing_data=('25C', '01h'), rate_limit=200)
+    ax.figure.savefig("test.png", bbox_inches='tight')
+
+The unwanted overhang interactions appear in red in the resulting figure:
+
+.. raw:: html
+
+    <p align="center">
+    <img src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/kappagate/master/examples/plotting_interactions.png" width="640">
+    </p>
+
+Colony picking statistics
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To convert the predicted success rate into decisions regarding how many colonies
+to pick, and when to stop picking colonies:
+
+.. code:: python
+
+    from kappagate import (overhangs_list_to_slots, predict_assembly_accuracy,
+                        plot_colony_picking_graph, success_rate_facts)
+
+    overhangs = ['TAGG', 'GACT', 'GGAC', 'CAGC',
+                'GGTC', 'GCGT', 'TGCT', 'GGTA',
+                'CGTC', 'CTAC', 'GCAA', 'CCCT']
+    slots = overhangs_list_to_slots(overhangs)
+    predicted_rate, _, _ = predict_assembly_accuracy(slots)
+    ax = plot_colony_picking_graph(success_rate=predicted_rate)
+    ax.figure.savefig("success_rate_facts.png", bbox_inches='tight')
+
+    print (success_rate_facts(predicted_rate, plain_text=True))
+
+Result:
+
+.. code:: bash
+
+   The valid colony rate is 47.7%. Expect 1.9 clones in average
+   until success. Pick 5 clones or more for 95% chances of at
+   least one success. If no success after 8 clones, there is
+   likely another problem (p-value=0.01).
+
+.. raw:: html
+
+    <p align="center">
+    <img src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/kappagate/master/examples/success_rate_facts.png" width="640">
+    </p>
 
 Installation
 -------------

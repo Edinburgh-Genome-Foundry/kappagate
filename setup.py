@@ -15,4 +15,5 @@ setup(
     license='MIT',
     keywords="DNA assembly synthetic biology golden gate",
     packages=find_packages(exclude='docs'),
-    install_requires=['kappagate', 'networkx', 'tatapov'])
+    install_requires=['kappagate', 'networkx', 'tatapov', 'matplotlib',
+                      'dnacauldron'])
