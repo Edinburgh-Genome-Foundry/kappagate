@@ -132,7 +132,7 @@ to pick, and when to stop picking colonies:
 
 Result:
 
-.. code:: bash
+.. code:: raw
 
    The valid colony rate is 47.7%. Expect 1.9 clones in average
    until success. Pick 5 clones or more for 95% chances of at
