@@ -3,9 +3,17 @@ import matplotlib
 matplotlib.use("Agg")
 from kappagate import (overhangs_list_to_slots, predict_assembly_accuracy,
                        plot_colony_picking_graph, success_rate_facts,
-                       plot_circular_interactions)
+                       plot_circular_interactions, load_record,
+                       parts_records_to_slots, construct_record_to_slots)
+import flametree
 
-def test_basic_success_rate_prediction():
+records_dict = {
+    name: load_record(os.path.join('tests', 'data', 'records', name + '.gb'),
+                      id=name, linear=False)
+    for name in ("partA", "partB", "partC", "assembled_construct")
+}
+
+def stest_basic_success_rate_prediction():
     overhangs=  ['GGAG', 'GGCA', 'TCGC', 'CAGT', 'TCCA',
                  'GAAT', 'AGTA', 'TCTT', 'CAAA', 'GCAC',
                  'AACG', 'GTCT', 'CCAT']
@@ -49,3 +57,22 @@ def test_success_rate_facts():
     slots = overhangs_list_to_slots(overhangs)
     predicted_rate, _, _ = predict_assembly_accuracy(slots)
     plot_colony_picking_graph(success_rate=predicted_rate)
+
+def test_parts_records_to_slots():
+    records = [records_dict[n] for n in ["partA", "partB", "partC"]]
+    slots = parts_records_to_slots(records, enzyme='auto')
+    assert slots == [('backbone-left', 'LEFT', 'ATTG'),
+                     ('partA', 'ATTG', 'GGCT'),
+                     ('partB', 'GGCT', 'GGGC'),
+                     ('partC', 'GGGC', 'GGCA'),
+                     ('backbone-right', 'GGCA', 'RIGHT')]
+    
+
+def test_construct_record_to_slots():
+    record = records_dict['assembled_construct']
+    slots = construct_record_to_slots(record, backbone_annotations='receptor')
+    assert slots == [('backbone-left', 'LEFT', 'ATTG'),
+                     ('p001', 'ATTG', 'GGCT'),
+                     ('p002', 'GGCT', 'GGGC'),
+                     ('p003', 'GGGC', 'GGCA'),
+                     ('backbone-right', 'GGCA', 'RIGHT')]

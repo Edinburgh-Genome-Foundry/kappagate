@@ -1,7 +1,10 @@
+import os
 import networkx as nx
+from Bio import SeqIO
 from dnacauldron import (RestrictionLigationMix, autoselect_enzyme,
                          get_overhangs_from_record)
 from dnacauldron.tools import reverse_complement
+from snapgene_reader import snapgene_file_to_seqrecord
 
 def parts_records_to_slots(parts_records, enzyme='auto'):
     """Return slots from parts records, ready to feed to other methods.
@@ -45,7 +48,9 @@ def parts_records_to_slots(parts_records, enzyme='auto'):
                 name, left, right = slots[i]
                 slots[i] = (name, reverse_complement(right),
                             reverse_complement(left))
-    return slots
+    return ([('backbone-left', 'LEFT', slots[0][1])] +
+            slots +
+            [('backbone-right', slots[-1][2], 'RIGHT')])
 
 def _find_backbone_center(record, backbone_annotations=()):
     """Find an annotation from the backbone, return the index of its center"""
@@ -56,6 +61,8 @@ def _find_backbone_center(record, backbone_annotations=()):
             qualifiers = str(qualifier)
             if any([ann in qualifiers for ann in backbone_annotations]):
                 return int((feature.location.start + feature.location.end)/2)
+    raise ValueError("Could not find any of the following in record %s: %s" % (
+                     record.id, ", ".join(backbone_annotations)))
 
 def construct_record_to_slots(record, backbone_annotations=()):
     """Return slots from a construct record, ready to feed to other methods.
@@ -64,8 +71,8 @@ def construct_record_to_slots(record, backbone_annotations=()):
     ----------
     record
       A biopython record of an assembly construct, either created by
-      DnaCauldron, or with explicit annotations with label "overhang"
-      and type misc_feature.
+      DnaCauldron, or with explicit annotations with  feature type "homology"
+      to indicate overhangs.
     
     backone_annotations
       Texts that can be found in the annotations located in the "backbone part"
@@ -79,8 +86,11 @@ def construct_record_to_slots(record, backbone_annotations=()):
 
     """
     backbone_center = _find_backbone_center(
-        record, backbone_annotations = ["HC_Amp"])
+        record, backbone_annotations=backbone_annotations)
     overhangs = get_overhangs_from_record(record, with_locations=True)
+    if overhangs is None:
+        raise ValueError("Could not find any overhang in the provided record "
+                         "with id %s" % record.id)
     overhangs = ([o for loc, o in overhangs if loc > backbone_center] +
                  [o for loc, o in overhangs if loc <= backbone_center])
     return overhangs_list_to_slots(overhangs)
@@ -116,7 +126,34 @@ def overhangs_list_to_slots(overhangs):
     """
     overhangs = list(overhangs)
     slots_overhangs = zip(['LEFT'] + overhangs, overhangs + ['RIGHT'])
-    return [
+    overhangs = [
         ("p%03d" % i, left, right)
         for i, (left, right) in enumerate(slots_overhangs)
     ]
+    overhangs[0] = ('backbone-left', *overhangs[0][1:])
+    overhangs[-1] = ('backbone-right', *overhangs[-1][1:])
+    return overhangs
+    
+
+def load_record(filename, linear=True, id='auto', upperize=True):
+    if filename.lower().endswith(("gb", "gbk")):
+        record = SeqIO.read(filename, "genbank")
+    elif filename.lower().endswith(('fa', 'fasta')):
+        record = SeqIO.read(filename, "fasta")
+    elif filename.lower().endswith('.dna'):
+        record = snapgene_file_to_seqrecord(filename)
+    else:
+        raise ValueError('Unknown format for file: %s' % filename)
+    if upperize:
+        record = record.upper()
+    record.linear = linear
+    if id == 'auto':
+        id = record.id
+        if id in [None, '', "<unknown id>", '.', ' ']:
+            id = os.path.splitext(os.path.basename(filename))[0]
+            record.name = id.replace(" ", "_")[:20]
+        record.id = id
+    elif id is not None:
+        record.id = id
+        record.name = id.replace(" ", "_")[:20]
+    return record

@@ -16,4 +16,5 @@ setup(
     keywords="DNA assembly synthetic biology golden gate",
     packages=find_packages(exclude='docs'),
     install_requires=['topkappy', 'networkx', 'tatapov', 'matplotlib',
-                      'dnacauldron'])
+                      'dnacauldron', 'proglog', 'flametree', 'biopython',
+                      'snapgene_reader'])
