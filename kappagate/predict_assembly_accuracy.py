@@ -53,8 +53,8 @@ def slots_to_agents_and_rules(slots, annealing_data=('25C', '01h'),
                 ov1, ov2 = site1, tatapov.reverse_complement(site2)
             else:
                 ov1, ov2 = site1, site2
-            rev_ov1 = tatapov.reverse_complement(ov1)
-            rev_ov2 = tatapov.reverse_complement(ov2)
+            # rev_ov1 = tatapov.reverse_complement(ov1)
+            # rev_ov2 = tatapov.reverse_complement(ov2)
             
             rate = annealing_data[ov1][ov2] #+ annealing_data[rev_ov2][rev_ov1]
             if rate == 0:
