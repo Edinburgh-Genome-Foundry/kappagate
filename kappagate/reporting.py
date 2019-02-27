@@ -67,11 +67,17 @@ def plot_colony_picking_graph(success_rate=None, ax=None):
 def min_trials_for_one_success(success_rate, certainty):
     """Return the minimal number of trials to be X% certain to have at least
     one success."""
+    if success_rate == 1:
+      return 1
+    if success_rate == 0:
+      return np.Inf
     return np.ceil(np.log(1 - certainty) / np.log(1 - success_rate))
 
 def average_trials_until_success(success_rate):
     """Return the average number of trials before a success is encountered."""
-    return 1.0 / (1 - success_rate)
+    if success_rate == 0:
+      return np.Inf
+    return 1.0 / success_rate
 
 def success_rate_facts(success_rate, plain_text=True):
     """Return relevant stats for the given success rate.

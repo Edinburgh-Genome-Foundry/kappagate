@@ -136,7 +136,11 @@ def overhangs_list_to_slots(overhangs):
     
 
 def load_record(filename, linear=True, id='auto', upperize=True):
-    if filename.lower().endswith(("gb", "gbk")):
+    if hasattr(filename, 'read'):
+        record = SeqIO.read(filename, "genbank")
+        if id == 'auto':
+            raise ValueError("Can't have id == 'auto' when reading filelikes.")
+    elif filename.lower().endswith(("gb", "gbk")):
         record = SeqIO.read(filename, "genbank")
     elif filename.lower().endswith(('fa', 'fasta')):
         record = SeqIO.read(filename, "fasta")

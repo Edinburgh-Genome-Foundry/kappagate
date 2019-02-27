@@ -43,20 +43,20 @@ def slots_to_agents_and_rules(slots, annealing_data=('25C', '01h'),
                     if set(o) <= set('ATGC')])
     rules = []
     for agent1, agent2 in itertools.product(agents, agents):
-        a1_left, a1_right = agent1.sites
+        _, a1_right = agent1.sites
         a2_left, a2_right = agent2.sites
-        for site1, site2, a2_side in ((a1_left, a2_left, 'left'),
-                                      (a1_left, a2_right, 'right')):
+        for site1, site2, a2_side in ((a1_right, a2_left, 'left'),
+                                      (a1_right, a2_right, 'right')):
             if (site1 not in all_overhangs) or (site2 not in all_overhangs):
                 continue
             if a2_side == 'left':
-                ov1, ov2 = site1, site2
-            else:
                 ov1, ov2 = site1, tatapov.reverse_complement(site2)
+            else:
+                ov1, ov2 = site1, site2
             rev_ov1 = tatapov.reverse_complement(ov1)
             rev_ov2 = tatapov.reverse_complement(ov2)
             
-            rate = annealing_data[ov1][ov2] + annealing_data[rev_ov1][rev_ov2]
+            rate = annealing_data[ov1][ov2] #+ annealing_data[rev_ov2][rev_ov1]
             if rate == 0:
                 continue
             rules.append(KappaRule(
@@ -77,7 +77,7 @@ def slots_to_agents_and_rules(slots, annealing_data=('25C', '01h'),
 def predict_assembly_accuracy(slots, duration=1000, initial_quantities=1000,
                               corrective_factor=1.0,
                               annealing_data=('25C', '01h')):
-    """Generate Topkappy rules and agents objects modeling parts interactions.
+    """Predict the accuracy of the assembly (proportion of good clones).
     
     Parameters
     ----------
@@ -106,8 +106,11 @@ def predict_assembly_accuracy(slots, duration=1000, initial_quantities=1000,
     Returns
     -------
 
-    agents, rules
-      Lists of Topkappy agents and rules, ready to be fed to a KappaModel
+    proportion, other_constructs, simulation_results
+      Where proportion is the proportion of good clones, other_constructs is
+      a dict {parts_tuple: proportion} showing the proportion of circular
+      constructs (in bad clones), and simulation_results is the topkappy
+      simulation results object.
     """
     agents, rules = slots_to_agents_and_rules(
         slots, annealing_data=annealing_data,
