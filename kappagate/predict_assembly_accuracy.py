@@ -118,8 +118,8 @@ def predict_assembly_accuracy(slots, duration=1000, initial_quantities=1000,
     if isinstance(initial_quantities, int):
         initial_quantities = {a: initial_quantities for a in agents}
     model = KappaModel(
-        agents = agents,
-        rules = rules,
+        agents=agents,
+        rules=rules,
         initial_quantities=initial_quantities,
         duration=duration,
         snapshot_times={'end': duration}
@@ -127,7 +127,9 @@ def predict_assembly_accuracy(slots, duration=1000, initial_quantities=1000,
     simulation_results = model.get_simulation_results()
     expected_slots_order = tuple(pos for pos, _, _ in slots)
     first_slot, last_slot = expected_slots_order[0], expected_slots_order[1]
-    end_agents = simulation_results['snapshots']['end']['snapshot_agents']
+    snapshots = simulation_results['snapshots']
+    end_time = 'end' if 'end' in snapshots else 'deadlock' 
+    end_agents = snapshots[end_time]['snapshot_agents']
     filtered_agents = [
         (freq, snapshot_agent_nodes_to_graph(nodes, with_ports=False))
         for freq, nodes in end_agents

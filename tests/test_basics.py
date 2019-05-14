@@ -13,10 +13,10 @@ records_dict = {
     for name in ("partA", "partB", "partC", "assembled_construct")
 }
 
-def stest_basic_success_rate_prediction():
-    overhangs=  ['GGAG', 'GGCA', 'TCGC', 'CAGT', 'TCCA',
-                 'GAAT', 'AGTA', 'TCTT', 'CAAA', 'GCAC',
-                 'AACG', 'GTCT', 'CCAT']
+def test_basic_success_rate_prediction():
+    overhangs =  ['GGAG', 'GGCA', 'TCGC', 'CAGT', 'TCCA',
+                  'GAAT', 'AGTA', 'TCTT', 'CAAA', 'GCAC',
+                  'AACG', 'GTCT', 'CCAT']
     slots = overhangs_list_to_slots(overhangs)
     success_rate, _, _ = predict_assembly_accuracy(
         slots, initial_quantities=5000)
@@ -31,16 +31,16 @@ def stest_basic_success_rate_prediction():
     slots = overhangs_list_to_slots(overhangs)
     success_rate, _, _ = predict_assembly_accuracy(
         slots, initial_quantities=5000)
-    assert 0.8 < success_rate < 0.9
+    assert 0.8 < success_rate < 0.92
 
 
-    overhangs=  ['GGAG', 'GGTC', 'AGCA', 'CAGT', 'GGTA',
-                 'GAAT', 'GGTT', 'TCTT', 'GGTG', 'GCAC',
-                 'AGCG', 'GTCT', 'CCAT']
+    overhangs =  ['GGAG', 'GGTC', 'AGCA', 'CAGT', 'GGTA',
+                  'GAAT', 'GGTT', 'TCTT', 'GGTG', 'GCAC',
+                  'AGCG', 'GTCT', 'CCAT']
     slots = overhangs_list_to_slots(overhangs)
     success_rate, _, _ = predict_assembly_accuracy(
         slots, initial_quantities=5000)
-    assert 0.3 < success_rate < 0.5
+    assert 0.2 < success_rate < 0.4
 
 def test_plot_circular_interactions():
     overhangs = ['TAGG', 'GACT', 'GGAC', 'CAGC',
@@ -55,7 +55,7 @@ def test_success_rate_facts():
                  'GGTC', 'GCGT', 'TGCT', 'GGTA',
                  'CGTC', 'CTAC', 'GCAA', 'CCCT']
     slots = overhangs_list_to_slots(overhangs)
-    predicted_rate, _, _ = predict_assembly_accuracy(slots)
+    predicted_rate, _, _ = predict_assembly_accuracy(slots, duration=10)
     plot_colony_picking_graph(success_rate=predicted_rate)
 
 def test_parts_records_to_slots():
