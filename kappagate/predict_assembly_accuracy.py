@@ -128,7 +128,7 @@ def predict_assembly_accuracy(slots, duration=1000, initial_quantities=1000,
     expected_slots_order = tuple(pos for pos, _, _ in slots)
     first_slot, last_slot = expected_slots_order[0], expected_slots_order[1]
     snapshots = simulation_results['snapshots']
-    end_time = 'end' if 'end' in snapshots else 'deadlock' 
+    end_time = 'end' if 'end' in snapshots else 'deadlock'
     end_agents = snapshots[end_time]['snapshot_agents']
     filtered_agents = [
         (freq, snapshot_agent_nodes_to_graph(nodes, with_ports=False))

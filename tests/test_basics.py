@@ -9,7 +9,7 @@ import flametree
 
 records_dict = {
     name: load_record(os.path.join('tests', 'data', 'records', name + '.gb'),
-                      id=name, linear=False)
+                      id=name, topology='circular')
     for name in ("partA", "partB", "partC", "assembled_construct")
 }
 
