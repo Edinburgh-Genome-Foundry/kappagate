@@ -4,9 +4,10 @@ from Bio import SeqIO
 from dnacauldron import (
     RestrictionLigationMix,
     autoselect_enzyme,
-    get_overhangs_from_record,
+    list_overhangs_from_record_annotations,
+    generate_type2s_restriction_mix,
 )
-from dnacauldron.tools import reverse_complement
+from dnacauldron.biotools import reverse_complement
 from snapgene_reader import snapgene_file_to_seqrecord
 
 
@@ -34,7 +35,9 @@ def parts_records_to_slots(parts_records, enzyme="auto"):
 
     if enzyme == "auto":
         enzyme = autoselect_enzyme(parts_records)
-    mix = RestrictionLigationMix(parts_records, enzyme=enzyme)
+    # mix = RestrictionLigationMix(parts_records, enzymes=[enzyme])
+    mix = generate_type2s_restriction_mix(parts=parts_records, enzyme=enzyme)
+
     slots_parts = mix.compute_slots()
     graph = mix.slots_graph(with_overhangs=False)
     slots = [
@@ -102,7 +105,9 @@ def construct_record_to_slots(record, backbone_annotations=()):
     backbone_center = _find_backbone_center(
         record, backbone_annotations=backbone_annotations
     )
-    overhangs = get_overhangs_from_record(record, with_locations=True)
+    overhangs = list_overhangs_from_record_annotations(
+        record, with_locations=True
+    )
     if overhangs is None:
         raise ValueError(
             "Could not find any overhang in the provided record "
@@ -154,11 +159,13 @@ def overhangs_list_to_slots(overhangs):
     overhangs[-1] = ("backbone-right", *overhangs[-1][1:])
     return overhangs
 
+
 def set_record_topology(record, topology, pass_if_already_set=False):
     record_topology = record.annotations.get("topology", None)
     do_nothing = pass_if_already_set and (record_topology is not None)
     if not do_nothing:
         record.annotations["topology"] = topology
+
 
 def load_record(
     filename,
