@@ -1,7 +1,7 @@
 .. raw:: html
 
     <p align="center">
-    <img alt="kappagate Logo" title="kappagate Logo" src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/kappagate/master/docs/title.png" width="600">
+    <img alt="kappagate logo" title="kappagate Logo" src="https://raw.githubusercontent.com/Edinburgh-Genome-Foundry/kappagate/master/docs/title.png" width="600">
     <br /><br />
     </p>
 
@@ -20,12 +20,12 @@ relying on 4bp overhangs (e.g. Golden Gate assembly, OGAB, etc.).
 Using Kappagate, you can get an estimation of how difficult the
 assembly will be, and how many clones should be tested to find a correct one. 
 
-Kappagate uses the exhaustive relative overhangs affinities tables provided
+Kappagate uses the exhaustive relative overhang affinity tables provided
 in Potapov et. al. 2018 (ACS Syn. Bio.). In this publication the authors show
 that the proportion of valid clones rates can be predicted using focused
 in-vitro experiments focused on the overhangs present in the assembly.
 
-Kappagate attempts to predict clone validity rates without any overhangs-subset-specific
+Kappagate attempts to predict clone validity rates without any overhang-subset-specific
 experiment, using computer simulations instead. It simulates the temporal evolution
 of the DNA fragments ligation reaction using the Kappa biological modeling system.
 At the end of the cloning simulation, Kappagate returns the ratio between "good"
@@ -40,21 +40,21 @@ Examples
 
 .. code:: python
 
-    from kappagate import predict_assembly_accuracy, overhangs_to_slots
+    from kappagate import predict_assembly_accuracy, overhangs_list_to_slots
 
     # FIRST TEST ON 12 WELL-DESIGNED OVERHANGS
 
     overhangs=  ['GGAG', 'GGCA', 'TCGC', 'CAGT', 'TCCA',
                  'GAAT', 'AGTA', 'TCTT', 'CAAA', 'GCAC',
                  'AACG', 'GTCT', 'CCAT']
-    slots = overhangs_to_slots(overhangs)
+    slots = overhangs_list_to_slots(overhangs)
     predicted_rate, _, _ = predict_assembly_accuracy(slots)
     
     print (predicted_rate)
     # >>> 0.987
 
 This means that 98.7% of clones will carry a valid assembly. It is really
-not far from the experimental observation in,, Potapov et al. which was
+not far from the experimental observation in Potapov et al., which was
 99.2% +- 0.6% (1 std).
 Let's have a look at a few more sets:
 
@@ -65,7 +65,7 @@ Let's have a look at a few more sets:
                  'GAAT', 'ATAG', 'AGTA', 'ATCA', 'TCTT',
                  'AGGT', 'CAAA', 'AAGC', 'GCAC', 'CAAC',
                  'AACG', 'CGAA', 'GTCT', 'TCAG', 'CCAT']
-    slots = overhangs_to_slots(overhangs)
+    slots = overhangs_list_to_slots(overhangs)
     predicted_rate, _, _ = predict_assembly_accuracy(slots)
     print (predicted_rate)
     # >>> 0.846
@@ -76,7 +76,7 @@ Let's have a look at a few more sets:
     overhangs=  ['GGAG', 'GGTC', 'AGCA', 'CAGT', 'GGTA',
                  'GAAT', 'GGTT', 'TCTT', 'GGTG', 'GCAC',
                  'AGCG', 'GTCT', 'CCAT']
-    slots = overhangs_to_slots(overhangs)
+    slots = overhangs_list_to_slots(overhangs)
     predicted_rate, _, _ = predict_assembly_accuracy(slots)
     print (predicted_rate)
     # >>> 0.33
@@ -163,7 +163,7 @@ Alternatively, you can unzip the sources in a folder and type
 License = MIT
 --------------
 
-Kappagate is an open-source software originally written at the `Edinburgh Genome Foundry <http://genomefoundry.org>`_ by `Zulko <https://github.com/Zulko>`_ and `released on Github <https://github.com/Edinburgh-Genome-Foundry/kappagate>`_ under the MIT licence (¢ Edinburg Genome Foundry).
+Kappagate is an open-source software originally written at the `Edinburgh Genome Foundry <http://genomefoundry.org>`_ by `Zulko <https://github.com/Zulko>`_ and `released on Github <https://github.com/Edinburgh-Genome-Foundry/kappagate>`_ under the MIT licence (Copyright  2018 Edinburgh Genome Foundry).
 
 Everyone is welcome to contribute !
 
